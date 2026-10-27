@@ -1,0 +1,165 @@
+local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
+local LocalPlayer = Players.LocalPlayer
+
+-- คลังคำศัพท์ตัวอย่าง (คุณสามารถเพิ่มคำศัพท์ภาษาไทยลงในตารางนี้ได้ตามต้องการ)
+local ThaiDictionary = {
+    "กะอม", "กะอมกะแอม", "กะปิ", "กะลา", "กะระยะ", "กระดาษ", "กระจก", "กระจาย", "กระฉูด", "กระชับ",
+    "ขวด", "ขโมย", "ขยัน", "ขยาย", "ขลาด", "ขำขัน", "ขาตั้ง", "ข้าวเหนียว", "ไข่เจียว", "ไข่ดาว",
+    "คน", "คมคาย", "คะแนน", "คางคก", "ค้าขาย", "คำคม", "คัมภีร์", "ค่ายมวย", "คู่แข่ง", "โคลงกลอน",
+    "งดงาม", "งอน", "งะ", "งานวัด", "งูสาด", "เงียบเหงา", "เงื่อนไข", "โง่เขลา",
+    "จดจำ", "จนตรอก", "จระเข้", "จริงจัง", "จอมพล", "จักจั่น", "จันทร์", "จับกุม", "จิตใจ", "โจנסต์",
+    "ฉเบียง", "ฉลาด", "ฉลอง", "ฉายา", "ฉิ่ง", "เฉลียว", "เฉื่อยฉชา",
+    "ชลบุรี", "ชะนี", "ชัชวาล", "ชัยชนะ", "ชาตรี", "ชำนาญ", "ชิงช้า", "ชีพจร", "โชคลาภ",
+    "ซซซ", "ซ่อมแซม", "ซ่อนหา", "ซับซ้อน", "ซื่อสัตย์",
+    "ดลใจ", "ดอกไม้", "ดวด", "ดอยคำ", "ดารากร", "ดาวเรือง", "ดำรง", "ดีใจ", "เด็ดเดี่ยว", "โดยสาร",
+    "ตลก", "ตลาด", "ตอไม้", "ตะวัน", "ตั๊กแตน", "ตาลโตนด", "ตำนาน", "ติชม", "ตุ๊กตา", "เต่านา",
+    "ถกเถียง", "ถนน", "ถดถอย", "ถนัด", "ถามตอบ", "ถ้ำมอง", "ถูลู่ถูกัง",
+    "ทรกรรม", "ทดลอง", "ถนนหนทาง", "ทองคำ", "ทับيم", "ท้าทาย", "ทำบุญ", "ทิวากร", "เทพเจ้า", "ไทเกอร์",
+    "ธงชาติ", "ธนาคาร", "ธรรมดา", "ธรรมชาติ", "ธารน้ำ",
+    "นกกระจอก", "นนทบุรี", "นโยบาย", "นักเรียน", "นานาชาติ", "นายอำเภอ", "นิทาน", "นิมิต", "เนรมิต",
+    "บวงสรวง", "บรรจง", "บรรยาย", "บันได", "บางปะกง", "ใบไม้", "บ้านพัก", "เบิกบาน",
+    "ปะการัง", "ประหยัด", "ปรัชญา", "ปลาทู", "ปัญญา", "ปารีส", "ปืนกล", "ปูอัด", "เป็ดปักกิ่ง",
+    "ผจญภัย", "แผงลอย", "ผ้าม่าน", "ผู้กำกับ", "เผด็จการ", "แผ่นดิน",
+    "ฝนตก", "ฝรั่ง", "ฝันดี", "ฝากฝัง",
+    "พจนานุกรม", "พจมาน", "พรรณราย", "พะเยา", "พายัพ", "พิพิธภัณฑ์", "พุธ", "เพชรบุรี", "ไพรวัลย์",
+    "ฟسซ", "ฟากฟ้า", "ฟารีดา", "ฟุตบอล", "เฟอร์นิเจอร์",
+    "ภากร", "ภาษี", "ภิญญา", "ภูมิใจ", "โภชนาการ",
+    "มงคล", "มณฑล", "มนุษย์", "มะละกอ", "มานะ", "มิตรสหาย", "มือถือ", "เมืองทอง", "ไม้ไผ่",
+    "ยศถา", "ยางพารา", "ยาทา", "ยิปซี", "ยุทธศาสตร์", "เยาวชน",
+    "รถไฟ", "รจนา", "รวดเร็ว", "รบกวน", "รวยรื่น", "ราตรี", "รำวง", "ริเริ่ม", "รูปร่าง", "เรไร",
+    "ลดาวัลย์", "ลักษณา", "ลานวัด", "ลิ้นจี่", "ลึกลับ", "เลขาธิการ", "โลกีย์",
+    "วรوي", "วรนุช", "วรรณคดี", "วאพ", "วาสนา", "วิชาการ", "วีรบุรุษ", "เวชศาสตร์",
+    "ศศิธร", "ศศิมา", "ศาสนา", "ศิราณี", "ศูนย์รวม",
+    "สมชาย", "สระว่ายน้ำ", "สวรรค์", "สอาง", "สัญจร", "สิริ", "สีสัน", "เสื้อผ้า", "ไสยศาสตร์",
+    "หกเหิน", "หยาดฝน", "หริม", "หลบหลีก", "หวังดี", "หัวใจ", "หิมะ", "เหรียญ", "ใหลหลง",
+    "องครักษ์", "อดทน", "อนาคต", "อนุบาล", "อภิสิทธิ์", "อมาตย์", "อารมณ์", "ออโต้", "อัยการ", "ไอศกรีม"
+}
+
+-- 1. สร้าง UI เมนู (ScreenGui)
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "ThaiWordChainHelper"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = CoreGui
+
+-- หน้าต่างหลัก
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 260, 0, 320)
+MainFrame.Position = UDim2.new(0.05, 0, 0.3, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 24, 33)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
+
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 10)
+MainCorner.Parent = MainFrame
+
+-- หัวข้อ UI
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.BackgroundColor3 = Color3.fromRGB(30, 35, 48)
+Title.TextColor3 = Color3.fromRGB(0, 255, 150)
+Title.Text = "🇹🇭 THAI WORD CHAIN HELPER"
+Title.Font = Enum.Font.SourceSansBold
+Title.TextSize = 14
+Title.Parent = MainFrame
+
+local TitleCorner = Instance.new("UICorner")
+TitleCorner.CornerRadius = UDim.new(0, 10)
+TitleCorner.Parent = Title
+
+-- กล่องพิมพ์คำที่จะค้นหาคำต่อ
+local SearchBox = Instance.new("TextBox")
+SearchBox.Size = UDim2.new(0.9, 0, 0, 35)
+SearchBox.Position = UDim2.new(0.05, 0, 0.15, 0)
+SearchBox.BackgroundColor3 = Color3.fromRGB(15, 18, 25)
+SearchBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+SearchBox.PlaceholderText = "พิมพ์พยางค์ท้าย หรือคำล่าสุดที่นี่..."
+SearchBox.Text = ""
+SearchBox.Font = Enum.Font.SourceSans
+SearchBox.TextSize = 14
+SearchBox.Parent = MainFrame
+
+local SearchCorner = Instance.new("UICorner")
+SearchCorner.CornerRadius = UDim.new(0, 6)
+SearchCorner.Parent = SearchBox
+
+-- แสดงคำแนะนำ (Hint Label)
+local HintLabel = Instance.new("TextLabel")
+HintLabel.Size = UDim2.new(0.9, 0, 0, 25)
+HintLabel.Position = UDim2.new(0.05, 0, 0.28, 0)
+HintLabel.BackgroundTransparency = 1
+HintLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+HintLabel.TextXAlignment = Enum.TextXAlignment.Left
+HintLabel.Text = "💡 คำแนะนำที่ขึ้นต้นด้วยพยางค์นี้:"
+HintLabel.Font = Enum.Font.SourceSansBold
+HintLabel.TextSize, HintLabel.Parent = 12, MainFrame
+
+-- ScrollingFrame สำหรับรายการคำศัพท์แนะนำ
+local SuggestionScroll = Instance.new("ScrollingFrame")
+SuggestionScroll.Size = UDim2.new(0.9, 0, 0, 190)
+SuggestionScroll.Position = UDim2.new(0.05, 0, 0.37, 0)
+SuggestionScroll.BackgroundColor3 = Color3.fromRGB(15, 18, 25)
+SuggestionScroll.BorderSizePixel = 0
+SuggestionScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+SuggestionScroll.Parent = MainFrame
+
+local UIList = Instance.new("UIListLayout")
+UIList.Parent = SuggestionScroll
+UIList.SortOrder = Enum.SortOrder.LayoutOrder
+UIList.Padding = UDim.new(0, 4)
+
+-- ฟังก์ชันอัปเดตรายการคำแนะนำตามข้อความที่พิมพ์
+local function updateSuggestions(query)
+	-- ลบปุ่มเก่าทั้งหมด
+	for _, child in pairs(SuggestionScroll:GetChildren()) do
+		if child:IsA("TextButton") then child:Destroy() end
+	end
+	
+	if query == "" then
+		SuggestionScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+		return
+	end
+	
+	-- ดึงเอาตัวอักษรสุดท้ายของคำมาเทียบ (รองรับการต่อคำพยางค์สุดท้าย)
+	-- ตัดช่องว่างออก
+	query = query:match("^%s*(.-)%s*$")
+	local lastChar = utf8.sub(query, utf8.len(query), utf8.len(query))
+	
+	local matchedCount = 0
+	for _, word in ipairs(ThaiDictionary) do
+		-- ตรวจสอบว่าคำในคลังขึ้นต้นด้วยตัวอักษรสุดท้าย หรือตรงกับ query ที่พิมพ์
+		if utf8.sub(word, 1, utf8.len(lastChar)) == lastChar or utf8.sub(word, 1, utf8.len(query)) == query then
+			matchedCount = matchedCount + 1
+			
+			local btn = Instance.new("TextButton")
+			btn.Size = UDim2.new(1, 0, 0, 30)
+			btn.BackgroundColor3 = Color3.fromRGB(35, 42, 58)
+			btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+			btn.Text = "👉 " .. word
+			btn.Font = Enum.Font.SourceSansBold
+			btn.TextSize = 14
+			btn.TextXAlignment = Enum.TextXAlignment.Left
+			btn.Parent = SuggestionScroll
+			
+			local btnCorner = Instance.new("UICorner")
+			btnCorner.CornerRadius = UDim.new(0, 5)
+			btnCorner.Parent = btn
+			
+			-- เมื่อกดที่คำแนะนำ จะนำคำนั้นไปใส่ในช่องพิมพ์ หรือคัดลอกอัตโนมัติ
+			btn.MouseButton1Click:Connect(function()
+				SearchBox.Text = word
+			end)
+		end
+	end
+	
+	SuggestionScroll.CanvasSize = UDim2.new(0, 0, 0, matchedCount * 34)
+end
+
+-- ตรวจสอบการพิมพ์ข้อความแบบ Real-time
+SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
+	updateSuggestions(SearchBox.Text)
+end)
